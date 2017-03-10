@@ -1,0 +1,168 @@
+diff --git a/internal/api/application_server.go b/internal/api/application_server.go
+index af2e8a2..cbdc447 100644
+--- a/internal/api/application_server.go
++++ b/internal/api/application_server.go
+@@ -264,6 +264,8 @@ func (a *ApplicationServerAPI) HandleDataUp(ctx context.Context, req *as.HandleD
+ 		FCnt:  req.FCnt,
+ 		FPort: uint8(req.FPort),
+ 		Data:  b,
++		Confirmed: req.Confirmed,
++		UplinkAck: req.UplinkAck,
+ 	}
+ 
+ 	for _, rxInfo := range req.RxInfo {
+@@ -338,32 +340,20 @@ func (a *ApplicationServerAPI) GetDataDown(ctx context.Context, req *as.GetDataD
+ 		return nil, grpc.Errorf(codes.Internal, errStr)
+ 	}
+ 
+-	queueSize, err := storage.GetDownlinkQueueSize(a.ctx.DB, devEUI)
++	_, err = storage.GetDownlinkQueueSize(a.ctx.DB, devEUI)
+ 	if err != nil {
+ 		errStr := fmt.Sprintf("get downlink queue size error: %s", err)
+ 		log.WithField("dev_eui", devEUI).Error(errStr)
+ 		return nil, grpc.Errorf(codes.Internal, errStr)
+ 	}
+ 
+-	if !qi.Confirmed {
+-		if err := storage.DeleteDownlinkQueueItem(a.ctx.DB, qi.ID); err != nil {
+-			errStr := fmt.Sprintf("delete downlink queue item error: %s", err)
+-			log.WithFields(log.Fields{
+-				"dev_eui": devEUI,
+-				"id":      qi.ID,
+-			}).Error(errStr)
+-			return nil, grpc.Errorf(codes.Internal, errStr)
+-		}
+-	} else {
+-		qi.Pending = true
+-		if err := storage.UpdateDownlinkQueueItem(a.ctx.DB, *qi); err != nil {
+-			errStr := fmt.Sprintf("update downlink queue item error: %s", err)
+-			log.WithFields(log.Fields{
+-				"dev_eui": devEUI,
+-				"id":      qi.ID,
+-			}).Error(errStr)
+-			return nil, grpc.Errorf(codes.Internal, errStr)
+-		}
++	if err := storage.DeleteDownlinkQueueItem(a.ctx.DB, qi.ID); err != nil {
++		errStr := fmt.Sprintf("delete downlink queue item error: %s", err)
++		log.WithFields(log.Fields{
++			"dev_eui": devEUI,
++			"id":      qi.ID,
++		}).Error(errStr)
++		return nil, grpc.Errorf(codes.Internal, errStr)
+ 	}
+ 
+ 	log.WithFields(log.Fields{
+@@ -377,7 +367,8 @@ func (a *ApplicationServerAPI) GetDataDown(ctx context.Context, req *as.GetDataD
+ 		Data:      b,
+ 		Confirmed: qi.Confirmed,
+ 		FPort:     uint32(qi.FPort),
+-		MoreData:  queueSize > 1,
++		MoreData:    qi.FramePending,
++		ReceivedAck: qi.ReceivedAck,
+ 	}, nil
+ 
+ }
+diff --git a/internal/downlink/downlink.go b/internal/downlink/downlink.go
+index 368dd39..51c17b9 100644
+--- a/internal/downlink/downlink.go
++++ b/internal/downlink/downlink.go
+@@ -50,6 +50,8 @@ func handleDataDownPayload(ctx common.Context, pl handler.DataDownPayload) error
+ 		Confirmed: pl.Confirmed,
+ 		FPort:     pl.FPort,
+ 		Data:      pl.Data,
++		ReceivedAck:  pl.ReceivedAck,
++		FramePending: pl.FramePending,
+ 	}
+ 
+ 	return HandleDownlinkQueueItem(ctx, node, &qi)
+diff --git a/internal/handler/models.go b/internal/handler/models.go
+index eb87076..a83da90 100644
+--- a/internal/handler/models.go
++++ b/internal/handler/models.go
+@@ -41,6 +41,8 @@ type DataUpPayload struct {
+ 	FCnt            uint32        `json:"fCnt"`
+ 	FPort           uint8         `json:"fPort"`
+ 	Data            []byte        `json:"data"`
++	Confirmed       bool          `json:"confirmed"`
++	UplinkAck       bool          `json:"uplinkAck"`
+ }
+ 
+ // DataDownPayload represents a data-down payload.
+@@ -51,6 +53,8 @@ type DataDownPayload struct {
+ 	Confirmed     bool          `json:"confirmed"`
+ 	FPort         uint8         `json:"fPort"`
+ 	Data          []byte        `json:"data"`
++	ReceivedAck   bool          `json:"receivedAck"`
++	FramePending  bool          `json:"framePending"`
+ }
+ 
+ // JoinNotification defines the payload sent to the application on
+diff --git a/internal/storage/downlink_queue.go b/internal/storage/downlink_queue.go
+index 3d7a398..b606508 100644
+--- a/internal/storage/downlink_queue.go
++++ b/internal/storage/downlink_queue.go
+@@ -19,6 +19,8 @@ type DownlinkQueueItem struct {
+ 	Pending   bool          `db:"pending"`
+ 	FPort     uint8         `db:"fport"`
+ 	Data      []byte        `db:"data"`
++	ReceivedAck  bool       `db:"received_ack"`
++	FramePending bool       `db:"frame_pending"`
+ }
+ 
+ // CreateDownlinkQueueItem adds an item to the downlink queue.
+@@ -30,14 +32,18 @@ func CreateDownlinkQueueItem(db *sqlx.DB, item *DownlinkQueueItem) error {
+ 			confirmed,
+ 			pending,
+ 			fport,
+-			data
+-		) values ($1, $2, $3, $4, $5, $6) returning id`,
++			data,
++			received_ack,
++			frame_pending
++		) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
+ 		item.DevEUI[:],
+ 		item.Reference,
+ 		item.Confirmed,
+ 		item.Pending,
+ 		item.FPort,
+ 		item.Data,
++		item.ReceivedAck,
++		item.FramePending,
+ 	)
+ 	if err != nil {
+ 		return fmt.Errorf("enqueue downlink queue item error: %s", err)
+@@ -90,14 +96,18 @@ func UpdateDownlinkQueueItem(db *sqlx.DB, item DownlinkQueueItem) error {
+ 			confirmed = $3,
+ 			pending = $4,
+ 			fport = $5,
+-			data = $6
+-		where id = $7`,
++			data = $6,
++			received_ack = $7,
++			frame_pending = $8
++		where id = $9`,
+ 		item.DevEUI[:],
+ 		item.Reference,
+ 		item.Confirmed,
+ 		item.Pending,
+ 		item.FPort,
+ 		item.Data,
++		item.ReceivedAck,
++		item.FramePending,
+ 		item.ID,
+ 	)
+ 	if err != nil {
+diff --git a/migrations/0005_add_queue.sql b/migrations/0005_add_queue.sql
+index 66f669e..853f9c0 100644
+--- a/migrations/0005_add_queue.sql
++++ b/migrations/0005_add_queue.sql
+@@ -7,6 +7,8 @@ create table downlink_queue (
+     pending boolean not null default false,
+     fport smallint not null,
+-    data bytea not null
++    data bytea not null,
++    received_ack boolean not null default false,
++    frame_pending boolean not null default false
+ );
+ 
+ create index downlink_queue_dev_eui on downlink_queue(dev_eui);

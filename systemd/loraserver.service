@@ -1,0 +1,12 @@
+[Unit]
+Description=loraserver
+After=mosquitto.service
+
+[Service]
+User=pi
+Group=pi
+ExecStart=/opt/LoRa-forwarder/loraserver --get-downlink-data-delay=9s
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,32 @@
+diff --git a/Makefile b/Makefile
+index e2c3082..4cba8f5 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,4 +1,4 @@
+-NAME := LoRaMac-node
++NAME := LoRaMac-forwarder
+ 
+ CC       = arm-none-eabi-gcc
+ CXX      = arm-none-eabi-g++
+@@ -44,7 +44,7 @@ src/boards/mcu/efm32gg/emlib/src/em_rtc.c \
+ src/boards/mcu/efm32gg/emlib/src/em_system.c \
+ src/boards/mcu/efm32gg/emlib/src/em_timer.c \
+ src/boards/mcu/efm32gg/emlib/src/em_usart.c \
+-src/apps/LoRaMac/classA/EFM32GG_STK3700/main.c
++src/apps/forwarder/EFM32GG_STK3700/main.c
+ 
+ INCLUDE_DIRS := \
+ src \
+diff --git a/src/mac/LoRaMac.c b/src/mac/LoRaMac.c
+index fc8220b..2337f98 100644
+--- a/src/mac/LoRaMac.c
++++ b/src/mac/LoRaMac.c
+@@ -173,7 +173,7 @@ static bool NodeAckRequested = false;
+  * If the server has sent a FRAME_TYPE_DATA_CONFIRMED_DOWN this variable indicates
+  * if the ACK bit must be set for the next transmission
+  */
+-static bool SrvAckRequested = false;
++bool SrvAckRequested = false;
+ 
+ /*!
+  * Indicates if the MAC layer wants to send MAC commands

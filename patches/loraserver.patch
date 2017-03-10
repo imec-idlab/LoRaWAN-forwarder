@@ -1,0 +1,141 @@
+diff --git a/api/as/as.proto b/api/as/as.proto
+index d92d7ba..1528522 100644
+--- a/api/as/as.proto
++++ b/api/as/as.proto
+@@ -102,6 +102,8 @@ message HandleDataUpRequest {
+ 	bytes data = 5;
+ 	TXInfo txInfo = 6;
+ 	repeated RXInfo rxInfo = 7;
++	bool confirmed = 8;
++	bool uplinkAck = 9;
+ }
+ 
+ message GetDataDownRequest {
+@@ -116,6 +118,7 @@ message GetDataDownResponse {
+ 	bool confirmed = 2;
+ 	uint32 fPort = 3;
+ 	bool moreData = 4;
++	bool receivedAck = 5;
+ }
+ 
+ message HandleDataUpResponse {}
+diff --git a/internal/downlink/data.go b/internal/downlink/data.go
+index a0453ad..2aa3a37 100644
+--- a/internal/downlink/data.go
++++ b/internal/downlink/data.go
+@@ -214,7 +214,7 @@ func SendUplinkResponse(ctx common.Context, ns session.NodeSession, rxPacket mod
+ 	remainingPayloadSize := common.Band.MaxPayloadSize[dr].N
+ 
+ 	// get data down from application-server (if it has anything in its queue)
+-	txPayload := getDataDownFromApplication(ctx, ns, dr)
++	txPayload, ack := getDataDownFromApplication(ctx, ns, dr)
+ 
+ 	// get mac-commands to fill the remaining payload bytes
+ 	if txPayload != nil {
+@@ -230,7 +230,7 @@ func SendUplinkResponse(ctx common.Context, ns session.NodeSession, rxPacket mod
+ 	macCommands := macQueueItemsToMACCommands(ctx, ns, macQueueItems)
+ 
+ 	ddCTX := DataDownFrameContext{
+-		ACK:         rxPacket.PHYPayload.MHDR.MType == lorawan.ConfirmedDataUp,
++		ACK:         ack,
+ 		MACCommands: macCommands,
+ 	}
+ 
+@@ -328,7 +328,7 @@ func getDataDownTXInfoAndDR(ctx common.Context, ns session.NodeSession, rxInfo g
+ 
+ // getDataDownFromApplication gets the downlink data from the application
+ // (if any). On error the error is logged.
+-func getDataDownFromApplication(ctx common.Context, ns session.NodeSession, dr int) *as.GetDataDownResponse {
++func getDataDownFromApplication(ctx common.Context, ns session.NodeSession, dr int) (*as.GetDataDownResponse, bool) {
+ 	resp, err := ctx.Application.GetDataDown(context.Background(), &as.GetDataDownRequest{
+ 		AppEUI:         ns.AppEUI[:],
+ 		DevEUI:         ns.DevEUI[:],
+@@ -340,11 +340,15 @@ func getDataDownFromApplication(ctx common.Context, ns session.NodeSession, dr i
+ 			"dev_eui": ns.DevEUI,
+ 			"fcnt":    ns.FCntDown,
+ 		}).Errorf("get data down from application error: %s", err)
+-		return nil
++		return nil, false
+ 	}
+ 
+-	if resp == nil || resp.FPort == 0 {
+-		return nil
++	if resp == nil {
++		return nil, false
++	}
++
++	if resp.FPort == 0 {
++		return nil, resp.ReceivedAck
+ 	}
+ 
+ 	if len(resp.Data) > common.Band.MaxPayloadSize[dr].N {
+@@ -354,7 +358,7 @@ func getDataDownFromApplication(ctx common.Context, ns session.NodeSession, dr i
+ 			"max_payload_size": common.Band.MaxPayloadSize[dr].N,
+ 			"dr":               dr,
+ 		}).Warning("data down from application exceeds max payload size")
+-		return nil
++		return nil, resp.ReceivedAck
+ 	}
+ 
+ 	log.WithFields(log.Fields{
+@@ -365,7 +369,7 @@ func getDataDownFromApplication(ctx common.Context, ns session.NodeSession, dr i
+ 		"more_data":   resp.MoreData,
+ 	}).Info("received data down from application")
+ 
+-	return resp
++	return resp, resp.ReceivedAck
+ }
+ 
+ // getAndFilterMACQueueItems returns the mac-commands to send, based on the constraints:
+@@ -440,3 +444,13 @@ func macQueueItemsToMACCommands(ctx common.Context, ns session.NodeSession, item
+ 
+ 	return out
+ }
++
++func ClearDataDownFromApplication(ctx common.Context, ns session.NodeSession, rxPacket models.RXPacket) {
++	_, dr, err := getDataDownTXInfoAndDR(ctx, ns, rxPacket.RXInfoSet[0])
++	if err == nil {
++		txPayload, _ := getDataDownFromApplication(ctx, ns, dr)
++		for txPayload != nil {
++			txPayload, _ = getDataDownFromApplication(ctx, ns, dr)
++		}
++	}
++}
+\ No newline at end of file
+diff --git a/internal/uplink/data.go b/internal/uplink/data.go
+index 4a02d2b..6b545b0 100644
+--- a/internal/uplink/data.go
++++ b/internal/uplink/data.go
+@@ -194,13 +194,6 @@ func handleCollectedDataUpPackets(ctx common.Context, rxPacket models.RXPacket)
+ 		return err
+ 	}
+ 
+-	// handle uplink ACK
+-	if macPL.FHDR.FCtrl.ACK {
+-		if err := handleUplinkACK(ctx, &ns); err != nil {
+-			return fmt.Errorf("handle uplink ack error: %s", err)
+-		}
+-	}
+-
+ 	// handle downlink (ACK)
+ 	time.Sleep(common.GetDownlinkDataDelay)
+ 	if err := downlink.SendUplinkResponse(ctx, ns, rxPacket); err != nil {
+@@ -273,6 +266,8 @@ func publishDataUp(ctx common.Context, ns session.NodeSession, rxPacket models.R
+ 				Bitrate:      uint32(rxPacket.RXInfoSet[0].DataRate.BitRate),
+ 			},
+ 		},
++		Confirmed: (rxPacket.PHYPayload.MHDR.MType == lorawan.ConfirmedDataUp),
++		UplinkAck: macPL.FHDR.FCtrl.ACK,
+ 	}
+ 
+ 	for _, rxInfo := range rxPacket.RXInfoSet {
+@@ -302,6 +297,9 @@ func publishDataUp(ctx common.Context, ns session.NodeSession, rxPacket models.R
+ 
+ 	}
+ 
++	// Clear the downlink queue to be certain that the packet we read later is really a reply on what we send now
++	downlink.ClearDataDownFromApplication(ctx, ns, rxPacket)
++
+ 	if _, err := ctx.Application.HandleDataUp(context.Background(), &publishDataUpReq); err != nil {
+ 		return fmt.Errorf("publish data up to application-server error: %s", err)
+ 	}

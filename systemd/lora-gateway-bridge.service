@@ -1,0 +1,12 @@
+[Unit]
+Description=lora-gateway-bridge
+After=mosquitto.service
+
+[Service]
+User=pi
+Group=pi
+ExecStart=/opt/LoRa-forwarder/lora-gateway-bridge
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
