@@ -12,7 +12,7 @@ The software has to run on Raspbian Stretch or a comparable distro. The majority
 - [brocaar/lora-gateway-bridge](https://github.com/brocaar/lora-gateway-bridge)
 - [brocaar/lora-server](https://github.com/brocaar/loraserver)
 - [brocaar/lora-app-server](https://github.com/brocaar/lora-app-server)
-- [texus/LoRaMac-node-EFM32GG-STK3700](https://github.com/texus/LoRaMac-node-EFM32GG-STK3700)
+- [imec-idlab/LoRaMac-node](https://github.com/imec-idlab/LoRaMac-node)
 
 
 Setup
@@ -28,7 +28,7 @@ Start the lora-app-server to configure the settings for the end-device. To do th
 
 You will also have to enter the Device EUI of the end-device in the `DEVICE_EUI` constant on top of `/opt/LoRa-forwarder/connect-with-gecko.py`. The `APPLICATION_ID` constant can remain 1 if you didn't create multiple applications. Note that the ApplicationID is not the same as the AppEUI.
 
-The last thing to do is flash `LoRaMac-node-EFM32GG-STK3700/LoRaMac-forwarder.hex` to the gecko that will be connected to the Raspberry Pi while using the forwarder.
+The last thing to do is flash `LoRaMac-node/LoRaMac-forwarder.hex` to the gecko that will be connected to the Raspberry Pi while using the forwarder.
 
 
 Running

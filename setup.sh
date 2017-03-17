@@ -28,9 +28,9 @@ cp poly_pkt_fwd/poly_pkt_fwd ../poly_pkt_fwd/
 cd ..
 
 # Build the LoRa node
-git clone https://github.com/texus/LoRaMac-node-EFM32GG-STK3700
-cd LoRaMac-node-EFM32GG-STK3700
-git checkout 8956e43320d050490a0ff083c4286ea5d74ac2ee
+git clone https://github.com/imec-idlab/LoRaMac-node
+cd LoRaMac-node
+git checkout bccf111f5df25ac5139008367e204f38b6de7ccd
 git apply ../patches/lora-node.patch
 mkdir -p src/apps/forwarder/EFM32GG_STK3700
 cp ../gecko-forwarder/Comissioning.h ../gecko-forwarder/main.c src/apps/forwarder/EFM32GG_STK3700/
