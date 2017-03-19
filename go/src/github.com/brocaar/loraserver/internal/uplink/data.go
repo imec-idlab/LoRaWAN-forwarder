@@ -145,13 +145,6 @@ func handleCollectedDataUpPackets(ctx common.Context, rxPacket models.RXPacket) 
 		return err
 	}
 
-	// handle uplink ACK
-	if macPL.FHDR.FCtrl.ACK {
-		if err := handleUplinkACK(ctx, &ns); err != nil {
-			return fmt.Errorf("handle uplink ack error: %s", err)
-		}
-	}
-
 	// handle downlink (ACK)
 	time.Sleep(common.GetDownlinkDataDelay)
 	if err := downlink.SendUplinkResponse(ctx, ns, rxPacket); err != nil {
@@ -224,6 +217,8 @@ func publishDataUp(ctx common.Context, ns session.NodeSession, rxPacket models.R
 				Bitrate:      uint32(rxPacket.RXInfoSet[0].DataRate.BitRate),
 			},
 		},
+		Confirmed: (rxPacket.PHYPayload.MHDR.MType == lorawan.ConfirmedDataUp),
+		UplinkAck: macPL.FHDR.FCtrl.ACK,
 	}
 
 	for _, rxInfo := range rxPacket.RXInfoSet {
@@ -252,6 +247,9 @@ func publishDataUp(ctx common.Context, ns session.NodeSession, rxPacket models.R
 		publishDataUpReq.Data = dataPL.Bytes
 
 	}
+
+	// Clear the downlink queue to be certain that the packet we read later is really a reply on what we send now
+	downlink.ClearDataDownFromApplication(ctx, ns, rxPacket)
 
 	if _, err := ctx.Application.HandleDataUp(context.Background(), &publishDataUpReq); err != nil {
 		return fmt.Errorf("publish data up to application-server error: %s", err)

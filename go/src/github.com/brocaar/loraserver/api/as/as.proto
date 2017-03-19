@@ -102,6 +102,8 @@ message HandleDataUpRequest {
 	bytes data = 5;
 	TXInfo txInfo = 6;
 	repeated RXInfo rxInfo = 7;
+	bool confirmed = 8;
+	bool uplinkAck = 9;
 }
 
 message GetDataDownRequest {
@@ -116,6 +118,7 @@ message GetDataDownResponse {
 	bool confirmed = 2;
 	uint32 fPort = 3;
 	bool moreData = 4;
+	bool receivedAck = 5;
 }
 
 message HandleDataUpResponse {}

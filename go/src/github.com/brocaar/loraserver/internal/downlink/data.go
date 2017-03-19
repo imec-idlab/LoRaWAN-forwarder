@@ -214,7 +214,7 @@ func SendUplinkResponse(ctx common.Context, ns session.NodeSession, rxPacket mod
 	remainingPayloadSize := common.Band.MaxPayloadSize[dr].N
 
 	// get data down from application-server (if it has anything in its queue)
-	txPayload := getDataDownFromApplication(ctx, ns, dr)
+	txPayload, ack := getDataDownFromApplication(ctx, ns, dr)
 
 	// get mac-commands to fill the remaining payload bytes
 	if txPayload != nil {
@@ -230,7 +230,7 @@ func SendUplinkResponse(ctx common.Context, ns session.NodeSession, rxPacket mod
 	macCommands := macQueueItemsToMACCommands(ctx, ns, macQueueItems)
 
 	ddCTX := DataDownFrameContext{
-		ACK:         rxPacket.PHYPayload.MHDR.MType == lorawan.ConfirmedDataUp,
+		ACK:         ack,
 		MACCommands: macCommands,
 	}
 
@@ -328,7 +328,7 @@ func getDataDownTXInfoAndDR(ctx common.Context, ns session.NodeSession, rxInfo g
 
 // getDataDownFromApplication gets the downlink data from the application
 // (if any). On error the error is logged.
-func getDataDownFromApplication(ctx common.Context, ns session.NodeSession, dr int) *as.GetDataDownResponse {
+func getDataDownFromApplication(ctx common.Context, ns session.NodeSession, dr int) (*as.GetDataDownResponse, bool) {
 	resp, err := ctx.Application.GetDataDown(context.Background(), &as.GetDataDownRequest{
 		AppEUI:         ns.AppEUI[:],
 		DevEUI:         ns.DevEUI[:],
@@ -340,11 +340,15 @@ func getDataDownFromApplication(ctx common.Context, ns session.NodeSession, dr i
 			"dev_eui": ns.DevEUI,
 			"fcnt":    ns.FCntDown,
 		}).Errorf("get data down from application error: %s", err)
-		return nil
+		return nil, false
 	}
 
-	if resp == nil || resp.FPort == 0 {
-		return nil
+	if resp == nil {
+		return nil, false
+	}
+
+	if resp.FPort == 0 {
+		return nil, resp.ReceivedAck
 	}
 
 	if len(resp.Data) > common.Band.MaxPayloadSize[dr].N {
@@ -354,7 +358,7 @@ func getDataDownFromApplication(ctx common.Context, ns session.NodeSession, dr i
 			"max_payload_size": common.Band.MaxPayloadSize[dr].N,
 			"dr":               dr,
 		}).Warning("data down from application exceeds max payload size")
-		return nil
+		return nil, resp.ReceivedAck
 	}
 
 	log.WithFields(log.Fields{
@@ -365,7 +369,7 @@ func getDataDownFromApplication(ctx common.Context, ns session.NodeSession, dr i
 		"more_data":   resp.MoreData,
 	}).Info("received data down from application")
 
-	return resp
+	return resp, resp.ReceivedAck
 }
 
 // getAndFilterMACQueueItems returns the mac-commands to send, based on the constraints:
@@ -439,4 +443,14 @@ func macQueueItemsToMACCommands(ctx common.Context, ns session.NodeSession, item
 	}
 
 	return out
+}
+
+func ClearDataDownFromApplication(ctx common.Context, ns session.NodeSession, rxPacket models.RXPacket) {
+	_, dr, err := getDataDownTXInfoAndDR(ctx, ns, rxPacket.RXInfoSet[0])
+	if err == nil {
+		txPayload, _ := getDataDownFromApplication(ctx, ns, dr)
+		for txPayload != nil {
+			txPayload, _ = getDataDownFromApplication(ctx, ns, dr)
+		}
+	}
 }
