@@ -1,0 +1,726 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "application.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/applications": {
+      "get": {
+        "summary": "List lists the available applications.",
+        "operationId": "List",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiListApplicationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "description": "Max number of applications to return in the result-test.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "description": "Offset in the result-set (for pagination).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Application"
+        ]
+      },
+      "post": {
+        "summary": "Create creates the given application.",
+        "operationId": "Create",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiCreateApplicationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiCreateApplicationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Application"
+        ]
+      }
+    },
+    "/api/applications/{id}": {
+      "get": {
+        "summary": "Get returns the requested application.",
+        "operationId": "Get",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiGetApplicationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Application"
+        ]
+      },
+      "delete": {
+        "summary": "Delete deletes the given application.",
+        "operationId": "Delete",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiDeleteApplicationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Application"
+        ]
+      },
+      "put": {
+        "summary": "Update updates the given application.",
+        "operationId": "Update",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiUpdateApplicationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUpdateApplicationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Application"
+        ]
+      }
+    },
+    "/api/applications/{id}/users": {
+      "get": {
+        "summary": "ListUsers lists the users for an application.",
+        "operationId": "ListUsers",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiListApplicationUsersResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "description": "Max number of applications to return in the result-test.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "description": "Offset in the result-set (for pagination).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Application"
+        ]
+      },
+      "post": {
+        "summary": "AddUser adds a user to an application.",
+        "operationId": "AddUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiEmptyApplicationUserResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiAddApplicationUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Application"
+        ]
+      }
+    },
+    "/api/applications/{id}/users/{userID}": {
+      "get": {
+        "summary": "GetUser gets the user that is associated with the application.",
+        "operationId": "GetUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiGetApplicationUserResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "userID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Application"
+        ]
+      },
+      "delete": {
+        "summary": "DeleteUser deletes the user's access to the associated application.",
+        "operationId": "DeleteUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiEmptyApplicationUserResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "userID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Application"
+        ]
+      },
+      "put": {
+        "summary": "UpdateUser sets the user's access to the associated application.",
+        "operationId": "UpdateUser",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiEmptyApplicationUserResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "userID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUpdateApplicationUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Application"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "apiAddApplicationUserRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "title": "The application to be set to allow these users"
+        },
+        "userID": {
+          "type": "string",
+          "format": "int64",
+          "title": "User id"
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "admin rights?"
+        }
+      }
+    },
+    "apiApplicationUserRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "title": "The application id"
+        },
+        "userID": {
+          "type": "string",
+          "format": "int64",
+          "title": "The user id"
+        }
+      }
+    },
+    "apiCreateApplicationRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the application (must be unique)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the application."
+        },
+        "rxDelay": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RX delay."
+        },
+        "rx1DROffset": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RX1 data-rate offset."
+        },
+        "channelListID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Channel-list ID used for CFlist (see LoRaWAN regional parameters if this applies to your region)."
+        },
+        "rxWindow": {
+          "$ref": "#/definitions/apiRXWindow",
+          "description": "RX window to use."
+        },
+        "rx2DR": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Data-rate to use for RX2."
+        },
+        "relaxFCnt": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Relax frame-counter mode is enabled."
+        },
+        "adrInterval": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Interval (in frames) in which the ADR engine may adapt the data-rate of the node (0 = disabled)."
+        },
+        "installationMargin": {
+          "type": "number",
+          "format": "double",
+          "description": "Installation-margin to use for ADR calculation."
+        },
+        "isABP": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Node is activated by ABP."
+        },
+        "isClassC": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Node operates in Class-C."
+        }
+      }
+    },
+    "apiCreateApplicationResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the application that was created."
+        }
+      }
+    },
+    "apiDeleteApplicationRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the application."
+        }
+      }
+    },
+    "apiDeleteApplicationResponse": {
+      "type": "object"
+    },
+    "apiEmptyApplicationUserResponse": {
+      "type": "object"
+    },
+    "apiGetApplicationRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "Name of the application."
+        }
+      }
+    },
+    "apiGetApplicationResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the application."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the application."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the application."
+        },
+        "rxDelay": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RX delay."
+        },
+        "rx1DROffset": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RX1 data-rate offset."
+        },
+        "channelListID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Channel-list ID used for CFlist (see LoRaWAN regional parameters if this applies to your region)."
+        },
+        "rxWindow": {
+          "$ref": "#/definitions/apiRXWindow",
+          "description": "RX window to use."
+        },
+        "rx2DR": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Data-rate to use for RX2."
+        },
+        "relaxFCnt": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Relax frame-counter mode is enabled."
+        },
+        "adrInterval": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Interval (in frames) in which the ADR engine may adapt the data-rate of the node (0 = disabled)."
+        },
+        "installationMargin": {
+          "type": "number",
+          "format": "double",
+          "description": "Installation-margin to use for ADR calculation."
+        },
+        "isABP": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Node is activated by ABP."
+        },
+        "isClassC": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Node operates in Class-C."
+        }
+      }
+    },
+    "apiGetApplicationUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "title": "The id of the user"
+        },
+        "username": {
+          "type": "string",
+          "title": "The username for the user"
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Has admin rights."
+        }
+      }
+    },
+    "apiListApplicationRequest": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "string",
+          "format": "int64",
+          "description": "Max number of applications to return in the result-test."
+        },
+        "offset": {
+          "type": "string",
+          "format": "int64",
+          "description": "Offset in the result-set (for pagination)."
+        }
+      }
+    },
+    "apiListApplicationResponse": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Total number of applications available within the result-set."
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiGetApplicationResponse"
+          },
+          "description": "Applications within this result-set."
+        }
+      }
+    },
+    "apiListApplicationUsersRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "title": "The id of the application"
+        },
+        "limit": {
+          "type": "string",
+          "format": "int64",
+          "description": "Max number of applications to return in the result-test."
+        },
+        "offset": {
+          "type": "string",
+          "format": "int64",
+          "description": "Offset in the result-set (for pagination)."
+        }
+      }
+    },
+    "apiListApplicationUsersResponse": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Total number of applications available within the result-set."
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiGetApplicationUserResponse"
+          },
+          "description": "Applications within this result-set."
+        }
+      }
+    },
+    "apiRXWindow": {
+      "type": "string",
+      "enum": [
+        "RX1",
+        "RX2"
+      ],
+      "default": "RX1"
+    },
+    "apiUpdateApplicationRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the application to update."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the application (must be unique)."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the application."
+        },
+        "rxDelay": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RX delay."
+        },
+        "rx1DROffset": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RX1 data-rate offset."
+        },
+        "channelListID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Channel-list ID used for CFlist (see LoRaWAN regional parameters if this applies to your region)."
+        },
+        "rxWindow": {
+          "$ref": "#/definitions/apiRXWindow",
+          "description": "RX window to use."
+        },
+        "rx2DR": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Data-rate to use for RX2."
+        },
+        "relaxFCnt": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Relax frame-counter mode is enabled."
+        },
+        "adrInterval": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Interval (in frames) in which the ADR engine may adapt the data-rate of the node (0 = disabled)."
+        },
+        "installationMargin": {
+          "type": "number",
+          "format": "double",
+          "description": "Installation-margin to use for ADR calculation."
+        },
+        "isABP": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Node is activated by ABP."
+        },
+        "isClassC": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Node operates in Class-C."
+        }
+      }
+    },
+    "apiUpdateApplicationResponse": {
+      "type": "object"
+    },
+    "apiUpdateApplicationUserRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "title": "The application id"
+        },
+        "userID": {
+          "type": "string",
+          "format": "int64",
+          "title": "The user id"
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Is admin?"
+        }
+      }
+    }
+  }
+}

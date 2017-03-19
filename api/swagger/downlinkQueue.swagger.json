@@ -1,0 +1,215 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "downlinkQueue.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/nodes/{devEUI}/queue": {
+      "get": {
+        "summary": "List lists the items in the queue for the given node.",
+        "operationId": "List",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiListDownlinkQueueItemsResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "devEUI",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DownlinkQueue"
+        ]
+      },
+      "post": {
+        "summary": "Enqueue adds the given item to the queue. When the node operates in\nClass-C mode, the data will be pushed directly to the network-server.",
+        "operationId": "Enqueue",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiEnqueueDownlinkQueueItemResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "devEUI",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiEnqueueDownlinkQueueItemRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DownlinkQueue"
+        ]
+      }
+    },
+    "/api/nodes/{devEUI}/queue/{id}": {
+      "delete": {
+        "summary": "Delete deletes an item from the queue.",
+        "operationId": "Delete",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiDeleteDownlinkQueueItemResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "devEUI",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "DownlinkQueue"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "apiDeleteDownlinkQeueueItemRequest": {
+      "type": "object",
+      "properties": {
+        "devEUI": {
+          "type": "string",
+          "description": "Hex encoded DevEUI of the node."
+        },
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the queue item to delete."
+        }
+      }
+    },
+    "apiDeleteDownlinkQueueItemResponse": {
+      "type": "object"
+    },
+    "apiDownlinkQueueItem": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the queue item."
+        },
+        "devEUI": {
+          "type": "string",
+          "description": "Hex encoded DevEUI of the node."
+        },
+        "reference": {
+          "type": "string",
+          "description": "Random reference (used on ack notification)."
+        },
+        "confirmed": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Is an ACK required from the node."
+        },
+        "pending": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Transmission is pending (waiting for an ack)."
+        },
+        "fPort": {
+          "type": "integer",
+          "format": "int64",
+          "description": "FPort used (must be \u003e0)."
+        },
+        "data": {
+          "type": "string",
+          "format": "byte",
+          "description": "Base64 encoded data."
+        }
+      }
+    },
+    "apiEnqueueDownlinkQueueItemRequest": {
+      "type": "object",
+      "properties": {
+        "devEUI": {
+          "type": "string",
+          "description": "Hex encoded DevEUI of the node."
+        },
+        "reference": {
+          "type": "string",
+          "description": "Random reference (used on ack notification)."
+        },
+        "confirmed": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Is an ACK required from the node."
+        },
+        "fPort": {
+          "type": "integer",
+          "format": "int64",
+          "title": "FPort used (must be \u003e0)"
+        },
+        "data": {
+          "type": "string",
+          "format": "byte",
+          "description": "Base64 encoded data."
+        }
+      }
+    },
+    "apiEnqueueDownlinkQueueItemResponse": {
+      "type": "object"
+    },
+    "apiListDownlinkQueueItemsRequest": {
+      "type": "object",
+      "properties": {
+        "devEUI": {
+          "type": "string",
+          "description": "Hex encoded DevEUI of the node."
+        }
+      }
+    },
+    "apiListDownlinkQueueItemsResponse": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiDownlinkQueueItem"
+          }
+        }
+      }
+    }
+  }
+}
