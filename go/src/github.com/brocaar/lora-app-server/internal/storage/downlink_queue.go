@@ -20,6 +20,8 @@ type DownlinkQueueItem struct {
 	Pending   bool          `db:"pending"`
 	FPort     uint8         `db:"fport"`
 	Data      []byte        `db:"data"`
+	ReceivedAck  bool       `db:"received_ack"`
+	FramePending bool       `db:"frame_pending"`
 }
 
 // CreateDownlinkQueueItem adds an item to the downlink queue.
@@ -31,14 +33,18 @@ func CreateDownlinkQueueItem(db *sqlx.DB, item *DownlinkQueueItem) error {
 			confirmed,
 			pending,
 			fport,
-			data
-		) values ($1, $2, $3, $4, $5, $6) returning id`,
+			data,
+			received_ack,
+			frame_pending
+		) values ($1, $2, $3, $4, $5, $6, $7, $8) returning id`,
 		item.DevEUI[:],
 		item.Reference,
 		item.Confirmed,
 		item.Pending,
 		item.FPort,
 		item.Data,
+		item.ReceivedAck,
+		item.FramePending,
 	)
 	if err != nil {
 		switch err := err.(type) {
@@ -104,14 +110,18 @@ func UpdateDownlinkQueueItem(db *sqlx.DB, item DownlinkQueueItem) error {
 			confirmed = $3,
 			pending = $4,
 			fport = $5,
-			data = $6
-		where id = $7`,
+			data = $6,
+			received_ack = $7,
+			frame_pending = $8
+		where id = $9`,
 		item.DevEUI[:],
 		item.Reference,
 		item.Confirmed,
 		item.Pending,
 		item.FPort,
 		item.Data,
+		item.ReceivedAck,
+		item.FramePending,
 		item.ID,
 	)
 	if err != nil {

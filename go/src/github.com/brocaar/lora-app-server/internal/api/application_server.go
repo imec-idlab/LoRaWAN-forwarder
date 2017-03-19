@@ -264,6 +264,8 @@ func (a *ApplicationServerAPI) HandleDataUp(ctx context.Context, req *as.HandleD
 		FCnt:  req.FCnt,
 		FPort: uint8(req.FPort),
 		Data:  b,
+		Confirmed: req.Confirmed,
+		UplinkAck: req.UplinkAck,
 	}
 
 	for _, rxInfo := range req.RxInfo {
@@ -338,32 +340,20 @@ func (a *ApplicationServerAPI) GetDataDown(ctx context.Context, req *as.GetDataD
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 
-	queueSize, err := storage.GetDownlinkQueueSize(a.ctx.DB, devEUI)
+	_, err = storage.GetDownlinkQueueSize(a.ctx.DB, devEUI)
 	if err != nil {
 		errStr := fmt.Sprintf("get downlink queue size error: %s", err)
 		log.WithField("dev_eui", devEUI).Error(errStr)
 		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 
-	if !qi.Confirmed {
-		if err := storage.DeleteDownlinkQueueItem(a.ctx.DB, qi.ID); err != nil {
-			errStr := fmt.Sprintf("delete downlink queue item error: %s", err)
-			log.WithFields(log.Fields{
-				"dev_eui": devEUI,
-				"id":      qi.ID,
-			}).Error(errStr)
-			return nil, grpc.Errorf(codes.Internal, errStr)
-		}
-	} else {
-		qi.Pending = true
-		if err := storage.UpdateDownlinkQueueItem(a.ctx.DB, *qi); err != nil {
-			errStr := fmt.Sprintf("update downlink queue item error: %s", err)
-			log.WithFields(log.Fields{
-				"dev_eui": devEUI,
-				"id":      qi.ID,
-			}).Error(errStr)
-			return nil, grpc.Errorf(codes.Internal, errStr)
-		}
+	if err := storage.DeleteDownlinkQueueItem(a.ctx.DB, qi.ID); err != nil {
+		errStr := fmt.Sprintf("delete downlink queue item error: %s", err)
+		log.WithFields(log.Fields{
+			"dev_eui": devEUI,
+			"id":      qi.ID,
+		}).Error(errStr)
+		return nil, grpc.Errorf(codes.Internal, errStr)
 	}
 
 	log.WithFields(log.Fields{
@@ -377,7 +367,8 @@ func (a *ApplicationServerAPI) GetDataDown(ctx context.Context, req *as.GetDataD
 		Data:      b,
 		Confirmed: qi.Confirmed,
 		FPort:     uint32(qi.FPort),
-		MoreData:  queueSize > 1,
+		MoreData:    qi.FramePending,
+		ReceivedAck: qi.ReceivedAck,
 	}, nil
 
 }

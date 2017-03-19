@@ -6,7 +6,9 @@ create table downlink_queue (
     confirmed boolean not null default false,
     pending boolean not null default false,
     fport smallint not null,
-    data bytea not null
+    data bytea not null,
+    received_ack boolean not null default false,
+    frame_pending boolean not null default false
 );
 
 create index downlink_queue_dev_eui on downlink_queue(dev_eui);

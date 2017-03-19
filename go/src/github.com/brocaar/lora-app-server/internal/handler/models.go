@@ -41,6 +41,8 @@ type DataUpPayload struct {
 	FCnt            uint32        `json:"fCnt"`
 	FPort           uint8         `json:"fPort"`
 	Data            []byte        `json:"data"`
+	Confirmed       bool          `json:"confirmed"`
+	UplinkAck       bool          `json:"uplinkAck"`
 }
 
 // DataDownPayload represents a data-down payload.
@@ -51,6 +53,8 @@ type DataDownPayload struct {
 	Confirmed     bool          `json:"confirmed"`
 	FPort         uint8         `json:"fPort"`
 	Data          []byte        `json:"data"`
+	ReceivedAck   bool          `json:"receivedAck"`
+	FramePending  bool          `json:"framePending"`
 }
 
 // JoinNotification defines the payload sent to the application on

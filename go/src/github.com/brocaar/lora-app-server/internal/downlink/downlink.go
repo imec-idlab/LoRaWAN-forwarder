@@ -50,6 +50,8 @@ func handleDataDownPayload(ctx common.Context, pl handler.DataDownPayload) error
 		Confirmed: pl.Confirmed,
 		FPort:     pl.FPort,
 		Data:      pl.Data,
+		ReceivedAck:  pl.ReceivedAck,
+		FramePending: pl.FramePending,
 	}
 
 	return HandleDownlinkQueueItem(ctx, node, &qi)
