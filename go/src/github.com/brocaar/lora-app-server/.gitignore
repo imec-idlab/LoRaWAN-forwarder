@@ -1,0 +1,21 @@
+# hidden files
+.*
+
+# logs
+*.log
+
+# builds
+/dist
+/build
+/internal/static
+/internal/migrations
+/static/static
+/static/index.html
+/static/asset-manifest.json
+/ui/build
+
+# certificates
+/certs
+
+# node modules
+/ui/node_modules

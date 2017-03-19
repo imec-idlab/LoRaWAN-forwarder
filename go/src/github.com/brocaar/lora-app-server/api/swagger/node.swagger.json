@@ -1,0 +1,648 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "node.proto",
+    "version": "version not set"
+  },
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/applications/{applicationID}/nodes": {
+      "get": {
+        "summary": "ListByApplicationID lists the nodes by the given application ID, sorted by the name of the node.",
+        "operationId": "ListByApplicationID",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiListNodeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "applicationID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "limit",
+            "description": "Max number of nodes to return in the result-set.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "description": "Offset of the result-set (for pagination).",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Node"
+        ]
+      }
+    },
+    "/api/nodes": {
+      "post": {
+        "summary": "Create creates the given node.",
+        "operationId": "Create",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiCreateNodeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiCreateNodeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Node"
+        ]
+      }
+    },
+    "/api/nodes/getRandomDevAddr": {
+      "post": {
+        "summary": "GetRandomDevAddr returns a random DevAddr taking the NwkID prefix into account.",
+        "operationId": "GetRandomDevAddr",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiGetRandomDevAddrResponse"
+            }
+          }
+        },
+        "tags": [
+          "Node"
+        ]
+      }
+    },
+    "/api/nodes/{devEUI}": {
+      "get": {
+        "summary": "Get returns the node for the requested name.",
+        "operationId": "Get",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiGetNodeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "devEUI",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Node"
+        ]
+      },
+      "delete": {
+        "summary": "Delete deletes the node matching the given name.",
+        "operationId": "Delete",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiDeleteNodeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "devEUI",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Node"
+        ]
+      },
+      "put": {
+        "summary": "Update updates the node matching the given name.",
+        "operationId": "Update",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiUpdateNodeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "devEUI",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiUpdateNodeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Node"
+        ]
+      }
+    },
+    "/api/nodes/{devEUI}/activation": {
+      "get": {
+        "summary": "GetActivation returns the current activation details of the node (OTAA and ABP).",
+        "operationId": "GetActivation",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiGetNodeActivationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "devEUI",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Node"
+        ]
+      },
+      "post": {
+        "summary": "Activate (re)activates the node (only when ABP is set to true).",
+        "operationId": "Activate",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/apiActivateNodeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "devEUI",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiActivateNodeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Node"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "apiActivateNodeRequest": {
+      "type": "object",
+      "properties": {
+        "devEUI": {
+          "type": "string",
+          "description": "Hex encoded DevEUI of the node to activate."
+        },
+        "devAddr": {
+          "type": "string",
+          "description": "Hex encoded DevAddr."
+        },
+        "appSKey": {
+          "type": "string",
+          "description": "Hex encoded AppSKey."
+        },
+        "nwkSKey": {
+          "type": "string",
+          "description": "Hex encoded NwkSKey."
+        },
+        "fCntUp": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Uplink frame-counter."
+        },
+        "fCntDown": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Downlink frame-counter."
+        }
+      }
+    },
+    "apiActivateNodeResponse": {
+      "type": "object"
+    },
+    "apiCreateNodeRequest": {
+      "type": "object",
+      "properties": {
+        "devEUI": {
+          "type": "string",
+          "description": "Hex encoded DevEUI."
+        },
+        "appEUI": {
+          "type": "string",
+          "description": "Hex encoded AppEUI."
+        },
+        "appKey": {
+          "type": "string",
+          "description": "Hex encoded AppKey. When isABP is set to true, this field is not needed."
+        },
+        "rxDelay": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RX delay."
+        },
+        "rx1DROffset": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RX1 data-rate offset."
+        },
+        "channelListID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Channel-list ID used for CFlist (see LoRaWAN regional parameters if this applies to your region)."
+        },
+        "rxWindow": {
+          "$ref": "#/definitions/apiRXWindow",
+          "description": "RX window to use."
+        },
+        "rx2DR": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Data-rate to use for RX2."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the node (if left blank, it will be set to the DevEUI)."
+        },
+        "relaxFCnt": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Relax frame-counter mode is enabled."
+        },
+        "adrInterval": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Interval (in frames) in which the ADR engine may adapt the data-rate of the node (0 = disabled)."
+        },
+        "installationMargin": {
+          "type": "number",
+          "format": "double",
+          "description": "Installation-margin to use for ADR calculation."
+        },
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the application to which the node must be added."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the node."
+        },
+        "isABP": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Node is activated by ABP."
+        },
+        "isClassC": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Node operates in Class-C."
+        },
+        "useApplicationSettings": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "When set to true, the application settings will be used to populate the node network settings."
+        }
+      }
+    },
+    "apiCreateNodeResponse": {
+      "type": "object"
+    },
+    "apiDeleteNodeRequest": {
+      "type": "object",
+      "properties": {
+        "devEUI": {
+          "type": "string",
+          "description": "Hex encoded DevEUI of the node."
+        }
+      }
+    },
+    "apiDeleteNodeResponse": {
+      "type": "object"
+    },
+    "apiGetNodeActivationRequest": {
+      "type": "object",
+      "properties": {
+        "devEUI": {
+          "type": "string",
+          "description": "Hex encoded DevEUI of the node."
+        }
+      }
+    },
+    "apiGetNodeActivationResponse": {
+      "type": "object",
+      "properties": {
+        "devAddr": {
+          "type": "string",
+          "description": "Hex encoded DevAddr."
+        },
+        "appSKey": {
+          "type": "string",
+          "description": "Hex encoded AppSKey."
+        },
+        "nwkSKey": {
+          "type": "string",
+          "description": "Hex encoded NwkSKey."
+        },
+        "fCntUp": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Uplink frame-counter."
+        },
+        "fCntDown": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Downlink frame-counter."
+        }
+      }
+    },
+    "apiGetNodeRequest": {
+      "type": "object",
+      "properties": {
+        "devEUI": {
+          "type": "string",
+          "description": "Hex encoded DevEUI of the node."
+        }
+      }
+    },
+    "apiGetNodeResponse": {
+      "type": "object",
+      "properties": {
+        "devEUI": {
+          "type": "string",
+          "description": "Hex encoded DevEUI."
+        },
+        "appEUI": {
+          "type": "string",
+          "description": "Hex encoded AppEUI."
+        },
+        "appKey": {
+          "type": "string",
+          "description": "Hex encoded AppKey."
+        },
+        "rxDelay": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RX delay."
+        },
+        "rx1DROffset": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RX1 data-rate offset."
+        },
+        "channelListID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Channel-list ID used for CFlist (see LoRaWAN regional parameters if this applies to your region)."
+        },
+        "rxWindow": {
+          "$ref": "#/definitions/apiRXWindow",
+          "description": "RX window to use."
+        },
+        "rx2DR": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Data-rate to use for RX2."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the node."
+        },
+        "relaxFCnt": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Relax frame-counter mode is enabled."
+        },
+        "adrInterval": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Interval (in frames) in which the ADR engine may adapt the data-rate of the node (0 = disabled)."
+        },
+        "installationMargin": {
+          "type": "number",
+          "format": "double",
+          "description": "Installation-margin to use for ADR calculation."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the node."
+        },
+        "isABP": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Node is activated by ABP."
+        },
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the application owning the node."
+        },
+        "isClassC": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Node operates in Class-C."
+        },
+        "useApplicationSettings": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "When set to true, the application settings will be used to populate the node network settings."
+        }
+      }
+    },
+    "apiGetRandomDevAddrRequest": {
+      "type": "object"
+    },
+    "apiGetRandomDevAddrResponse": {
+      "type": "object",
+      "properties": {
+        "devAddr": {
+          "type": "string",
+          "description": "Hex encoded DevAddr."
+        }
+      }
+    },
+    "apiListNodeByApplicationIDRequest": {
+      "type": "object",
+      "properties": {
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the application for which to list the nodes."
+        },
+        "limit": {
+          "type": "string",
+          "format": "int64",
+          "description": "Max number of nodes to return in the result-set."
+        },
+        "offset": {
+          "type": "string",
+          "format": "int64",
+          "description": "Offset of the result-set (for pagination)."
+        }
+      }
+    },
+    "apiListNodeResponse": {
+      "type": "object",
+      "properties": {
+        "totalCount": {
+          "type": "string",
+          "format": "int64",
+          "description": "Total number of nodes available within the result-set."
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/apiGetNodeResponse"
+          },
+          "description": "Nodes within this result-set."
+        }
+      }
+    },
+    "apiRXWindow": {
+      "type": "string",
+      "enum": [
+        "RX1",
+        "RX2"
+      ],
+      "default": "RX1"
+    },
+    "apiUpdateNodeRequest": {
+      "type": "object",
+      "properties": {
+        "devEUI": {
+          "type": "string",
+          "description": "Hex encoded DevEUI of the node to update."
+        },
+        "appEUI": {
+          "type": "string",
+          "description": "Hex encoded AppEUI."
+        },
+        "appKey": {
+          "type": "string",
+          "description": "Hex encoded AppKey."
+        },
+        "rxDelay": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RX delay."
+        },
+        "rx1DROffset": {
+          "type": "integer",
+          "format": "int64",
+          "description": "RX1 data-rate offset."
+        },
+        "channelListID": {
+          "type": "string",
+          "format": "int64",
+          "description": "Channel-list ID used for CFlist (see LoRaWAN regional parameters if this applies to your region)."
+        },
+        "rxWindow": {
+          "$ref": "#/definitions/apiRXWindow",
+          "description": "RX window to use."
+        },
+        "rx2DR": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Data-rate to use for RX2."
+        },
+        "name": {
+          "type": "string",
+          "title": "Name of the node (note that renaming the node affects its api endpoint)"
+        },
+        "relaxFCnt": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Relax frame-counter mode is enabled."
+        },
+        "adrInterval": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Interval (in frames) in which the ADR engine may adapt the data-rate of the node (0 = disabled)."
+        },
+        "installationMargin": {
+          "type": "number",
+          "format": "double",
+          "description": "Installation-margin to use for ADR calculation."
+        },
+        "applicationID": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID of the application owning the node."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the node."
+        },
+        "isABP": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Node is activated by ABP."
+        },
+        "isClassC": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "Node operates in Class-C."
+        },
+        "useApplicationSettings": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "When set to true, the application settings will be used to populate the node network settings."
+        }
+      }
+    },
+    "apiUpdateNodeResponse": {
+      "type": "object"
+    }
+  }
+}
