@@ -4412,6 +4412,11 @@ LoRaMacStatus_t LoRaMacMcpsRequest( McpsReq_t *mcpsRequest )
     return status;
 }
 
+void LoRaMacSetSrvAckRequested( bool srvAckRequested )
+{
+    SrvAckRequested = srvAckRequested;
+}
+
 void LoRaMacTestRxWindowsOn( bool enable )
 {
     IsRxWindowsEnabled = enable;

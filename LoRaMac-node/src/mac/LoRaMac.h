@@ -1823,6 +1823,19 @@ LoRaMacStatus_t LoRaMacMlmeRequest( MlmeReq_t *mlmeRequest );
  */
 LoRaMacStatus_t LoRaMacMcpsRequest( McpsReq_t *mcpsRequest );
 
+/*!
+ * \brief   Changes the internal SrvAckRequested variable
+ *
+ * \details The LoRaWan-forwarder needs the ability to control whether the node
+ *          will reply with an ack. This is done by calling this function to
+ *          change the internal SrvAckRequested variable which determines
+ *          whether the LoRaMac will include this ack in the next frame or not.
+ *
+ * \param   [IN] srvAckRequested - New value for the internal SrvAckRequested.
+ *
+ */
+void LoRaMacSetSrvAckRequested( bool srvAckRequested );
+
 /*! \} defgroup LORAMAC */
 
 #endif // __LORAMAC_H__
