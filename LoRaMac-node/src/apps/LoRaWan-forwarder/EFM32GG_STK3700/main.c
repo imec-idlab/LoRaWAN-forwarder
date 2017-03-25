@@ -30,8 +30,6 @@ static uint8_t uartBuffer[1+(2*(1+1+255+2))+1]; // start + [type + data length +
 static uint16_t uartMessageLength;
 static uint8_t uartMessage[1+1+255]; // type + data length + data
 
-extern bool SrvAckRequested;
-
 static const uint16_t crc16_table[256] = {
     0x0000, 0x1189, 0x2312, 0x329B, 0x4624, 0x57AD, 0x6536, 0x74BF,
     0x8C48, 0x9DC1, 0xAF5A, 0xBED3, 0xCA6C, 0xDBE5, 0xE97E, 0xF8F7,
@@ -165,7 +163,7 @@ static bool SendFrame(void)
     }
     else // Send the data
     {
-    	SrvAckRequested = uartMessage[4];
+	LoRaMacSetSrvAckRequested(uartMessage[4]);
 
         if (uartMessage[3])
         {
