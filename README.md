@@ -15,6 +15,23 @@ The software has to run on Raspbian Stretch or a comparable distro. The majority
 - [imec-idlab/LoRaMac-node](https://github.com/imec-idlab/LoRaMac-node)
 
 
+Dependencies
+------------
+
+Make sure you have the required packages installed:
+```
+sudo apt-get install gcc-arm-none-eabi \
+                     golang \
+                     protobuf-compiler \
+                     go-bindata \
+                     mosquitto \
+                     redis-server \
+                     postgresql
+
+pip install paho-mqtt
+```
+
+
 Setup
 -----
 
@@ -22,7 +39,16 @@ Make sure the concentrator board is connected properly (as explained [here](http
 
 Make sure SPI is enabled on the Raspberry Pi. You can enable it by running `sudo raspi-config`, selecting `Interface Options` and enabling `SPI` there.
 
-Run `setup.sh` to download and install the needed software to `/opt/LoRa-forwarder`.
+Create a database for the LoRa Server:
+```
+make db
+```
+
+Build and install the software to `/opt/LoRa-forwarder`:
+```
+make build
+make install
+```
 
 Start the lora-app-server to configure the settings for the end-device. To do this, run `sudo systemctl start lora-app-server`. You can then connect to `https://0.0.0.0:8080`. This will print a warning about the certificate because a self-signed certificate was used, discard this warning (in chrome press `ADVANCED` and then `Proceed to 0.0.0.0 (unsafe)`). Click the `CREATE APPLICATION` button on the page and enter any application name and description. Now you can press the `CREATE NODE` button to setup your end-device to your needs. The `Receive window delay` option under `Advanced network settings` will have to be set high enough so that the forwarder has time enough to send the packet to the upstream gateway and get a response back. Currently you must set this to 10.
 
@@ -33,11 +59,6 @@ The last thing to do is flash `LoRaMac-node/LoRaMac-forwarder.hex` to the gecko 
 
 Running
 -------
-
-The first time you want to use the concentrator board after the Raspberry Pi booted you will have to reset it. A script has been provided that will toggle the reset pin.
-```
-sudo /opt/LoRa-forwarder/reset-concentrator.sh
-```
 
 Connect the gecko to the Raspberry Pi or press its reset button when already connected. It will immediately attempt to join the upstream gateway. Once it has done this, it will start listening for serial communication with the Raspberry Pi.
 
@@ -54,5 +75,6 @@ sudo systemctl start lora-app-server loraserver lora-gateway-bridge
 Finally start the packet forwarder that will configure the concentrator board and pass packets to the LoRa Server. This command is blocking.
 ```
 cd /opt/LoRa-forwarder/
+sudo ./reset-concentrator.sh
 ./poly_pkt_fwd
 ```
