@@ -39,15 +39,17 @@ const struct Radio_s Radio =
     SX1276GetTimeOnAir,
     SX1276Send,
     SX1276SetSleep,
-    SX1276SetStby, 
+    SX1276SetStby,
     SX1276SetRx,
     SX1276StartCad,
+    SX1276SetTxContinuousWave,
     SX1276ReadRssi,
     SX1276Write,
     SX1276Read,
     SX1276WriteBuffer,
     SX1276ReadBuffer,
-    SX1276SetMaxPayloadLength
+    SX1276SetMaxPayloadLength,
+    SX1276SetPublicNetwork
 };
 
 /*!
@@ -193,18 +195,22 @@ void SX1276AntSwDeInit( void )
     GpioInit( &AntSwitchHf, NC, PIN_OUTPUT, PIN_OPEN_DRAIN, PIN_NO_PULL, 0 );
 }
 
-void SX1276SetAntSw( uint8_t rxTx )
+void SX1276SetAntSw( uint8_t opMode )
 {
-    if( rxTx != 0 ) // 1: TX, 0: RX
-    {
-        GpioWrite( &AntSwitchLf, 0 );
-        GpioWrite( &AntSwitchHf, 1 );
-    }
-    else
-    {
-        GpioWrite( &AntSwitchLf, 1 );
-        GpioWrite( &AntSwitchHf, 0 );
-    }
+	switch( opMode )
+	{
+	case RFLR_OPMODE_TRANSMITTER:
+		GpioWrite( &AntSwitchLf, 0 );
+		GpioWrite( &AntSwitchHf, 1 );
+		break;
+	case RFLR_OPMODE_RECEIVER:
+	case RFLR_OPMODE_RECEIVER_SINGLE:
+	case RFLR_OPMODE_CAD:
+	default:
+		GpioWrite( &AntSwitchLf, 1 );
+		GpioWrite( &AntSwitchHf, 0 );
+		break;
+	}
 }
 
 bool SX1276CheckRfFrequency( uint32_t frequency )
