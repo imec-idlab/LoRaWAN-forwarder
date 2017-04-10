@@ -28,6 +28,8 @@ lora-app-server: loraserver
 	$(MAKE) requirements -C go/src/github.com/brocaar/lora-app-server SHELL=/bin/bash
 	go get -u github.com/google/protobuf | true
 	cp go/src/github.com/google/protobuf/src/google/protobuf go/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/google/ -R
+	$(MAKE) ui-requirements -C go/src/github.com/brocaar/lora-app-server
+	$(MAKE) ui -C go/src/github.com/brocaar/lora-app-server
 	$(MAKE) api -C go/src/github.com/brocaar/lora-app-server
 	$(MAKE) statics -C go/src/github.com/brocaar/lora-app-server
 	$(MAKE) build -C go/src/github.com/brocaar/lora-app-server
